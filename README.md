@@ -76,33 +76,31 @@ Flow: Cart → Discount → Payment → Inventory → RabbitMQ Event
 smart-ecom/
 │
 ├── cart-service/
-│   ├── index.js              # Express REST API
-│   ├── package.json          # Node dependencies
+│   ├── index.js
+│   ├── package.json
 │   └── Dockerfile
 │
 ├── payment-service/
-│   ├── app.py                # Flask REST API
-│   ├── notify.py             # RabbitMQ publisher
+│   ├── app.py
+│   ├── notify.py
 │   └── Dockerfile
 │
 ├── inventory-service/
-│   ├── src/
-│   │   └── main/
-│   │       ├── java/com/example/inventory/
-│   │       │   ├── InventoryController.java
-│   │       │   ├── Stock.java
-│   │       │   └── StockRepository.java
-│   │       └── resources/
-│   │           └── application.properties
+│   ├── src/main/java/com/example/inventory/
+│   │   ├── InventoryController.java
+│   │   ├── Stock.java
+│   │   └── StockRepository.java
+│   ├── src/main/resources/
+│   │   └── application.properties
 │   ├── pom.xml
 │   └── Dockerfile
 │
 ├── discount-function/
-│   ├── handler.js            # Serverless discount logic
+│   ├── handler.js
 │   └── serverless.yml
 │
 ├── deploy/
-│   ├── docker-compose.yml    # Orchestration
+│   ├── docker-compose.yml
 │   ├── k8s-cart.yaml
 │   └── nginx.conf
 │
@@ -113,13 +111,10 @@ smart-ecom/
 
 ## Prerequisites
 
-Make sure the following are installed on your system:
-
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - [Node.js v18+](https://nodejs.org/)
 - [Python 3.x](https://www.python.org/)
 - [Postman](https://www.postman.com/downloads/)
-- pip package: `pika`
 
 ```bash
 pip install pika
@@ -129,60 +124,25 @@ pip install pika
 
 ## Installation & Setup
 
-### Step 1 — Extract the project
-
 ```bash
 unzip smart-ecom.zip
 cd smart-ecom
-```
-
-### Step 2 — Verify folder structure
-
-```bash
-ls
-# cart-service  payment-service  inventory-service  discount-function  deploy
 ```
 
 ---
 
 ## Running the Services
 
-### Step 1 — Start all containers
-
 ```bash
 cd deploy
 docker-compose up --build -d
 ```
 
-### Step 2 — Verify all containers are running
+### All Containers Running
 
-```bash
-docker ps
-```
+> Screenshot: All 5 Docker containers running
 
-Expected output:
-
-```
-CONTAINER           PORT     STATUS
-deploy-cart-1       3001     Up
-deploy-payment-1    3002     Up
-deploy-inventory-1  3003     Up
-deploy-rabbitmq-1   5672     Up
-deploy-mysql-1      3307     Up
-```
-
-### Step 3 — Check inventory logs (confirm MySQL connected)
-
-```bash
-docker logs deploy-inventory-1 --tail 5
-```
-
-Expected:
-```
-HikariPool-1 - Start completed
-Tomcat started on port(s): 3003
-Started InventoryMain in 8.715 seconds
-```
+![Docker Containers Running](screenshots/01-docker-ps.png)
 
 ---
 
@@ -197,7 +157,6 @@ POST http://localhost:3003/inventory/update
 Content-Type: application/json
 ```
 
-Request Body:
 ```json
 {
   "Laptop": 50,
@@ -206,14 +165,11 @@ Request Body:
 }
 ```
 
-Response:
-```json
-[
-  {"id": 1, "name": "Laptop", "qty": 50},
-  {"id": 2, "name": "Phone", "qty": 100},
-  {"id": 3, "name": "Headphones", "qty": 30}
-]
-```
+> Screenshot: Inventory items added successfully
+
+![Inventory POST](screenshots/02-inventory-post.png)
+
+---
 
 #### GET — Retrieve All Inventory Items
 
@@ -221,14 +177,11 @@ Response:
 GET http://localhost:3003/inventory/view
 ```
 
-Response:
-```json
-[
-  {"id": 1, "name": "Laptop", "qty": 50},
-  {"id": 2, "name": "Phone", "qty": 100},
-  {"id": 3, "name": "Headphones", "qty": 30}
-]
-```
+> Screenshot: All inventory items retrieved from MySQL
+
+![Inventory GET ALL](screenshots/03-inventory-get-all.png)
+
+---
 
 #### PUT — Update Inventory After Purchase
 
@@ -237,12 +190,15 @@ POST http://localhost:3003/inventory/update
 Content-Type: application/json
 ```
 
-Request Body:
 ```json
 {
   "Laptop": 48
 }
 ```
+
+> Screenshot: Laptop quantity updated to 48 after purchase
+
+![Inventory PUT Update](screenshots/04-inventory-put.png)
 
 ---
 
@@ -255,7 +211,6 @@ POST http://localhost:3001/add
 Content-Type: application/json
 ```
 
-Request Body:
 ```json
 {
   "item": {
@@ -266,14 +221,11 @@ Request Body:
 }
 ```
 
-Response:
-```json
-{
-  "cart": [
-    {"name": "Laptop", "price": 999.99, "qty": 2}
-  ]
-}
-```
+> Screenshot: Item added to cart successfully
+
+![Cart POST](screenshots/05-cart-post.png)
+
+---
 
 #### GET — View Cart Contents
 
@@ -281,27 +233,21 @@ Response:
 GET http://localhost:3001/view
 ```
 
-Response:
-```json
-{
-  "cart": [
-    {"name": "Laptop", "price": 999.99, "qty": 2}
-  ]
-}
-```
+> Screenshot: Cart contents displayed
+
+![Cart GET](screenshots/06-cart-get.png)
 
 ---
 
 ### 3. Payment Service — Port 3002
 
-#### POST — Process Payment WITH Discount
+#### POST — Payment WITH Discount (NEWYEAR = 20% off)
 
 ```
 POST http://localhost:3002/pay
 Content-Type: application/json
 ```
 
-Request Body:
 ```json
 {
   "amount": 799.99,
@@ -310,23 +256,19 @@ Request Body:
 }
 ```
 
-Response:
-```json
-{
-  "status": "ok",
-  "amount": 799.99,
-  "method": "card"
-}
-```
+> Screenshot: Payment processed with NEWYEAR discount
 
-#### POST — Process Payment WITHOUT Discount
+![Payment With Discount](screenshots/07-payment-with-discount.png)
+
+---
+
+#### POST — Payment WITHOUT Discount
 
 ```
 POST http://localhost:3002/pay
 Content-Type: application/json
 ```
 
-Request Body:
 ```json
 {
   "amount": 999.99,
@@ -334,46 +276,30 @@ Request Body:
 }
 ```
 
-Response:
-```json
-{
-  "status": "ok",
-  "amount": 999.99,
-  "method": "UPI"
-}
-```
+> Screenshot: Payment processed without discount
+
+![Payment Without Discount](screenshots/08-payment-without-discount.png)
 
 ---
 
 ## Discount Function
 
-The discount function runs serverless-style locally using Node.js.
-
-### Run Discount Calculation
-
 ```bash
 cd discount-function
-node -e "
-const h = require('./handler');
-h.apply({body: JSON.stringify({code: 'NEWYEAR', amount: 999.99})}).then(r => {
-  const b = JSON.parse(r.body);
-  console.log('Code:           NEWYEAR');
-  console.log('Discount Rate:  ' + b.discount * 100 + '%');
-  console.log('Original Total: 999.99');
-  console.log('Final Total:    ' + (999.99 - (999.99 * b.discount)).toFixed(2));
-});
-"
+node -e "const h=require('./handler');h.apply({body:JSON.stringify({code:'NEWYEAR',amount:999.99})}).then(r=>{const b=JSON.parse(r.body);console.log('Code: NEWYEAR');console.log('Discount: '+b.discount*100+'%');console.log('Original Total: 999.99');console.log('Final Total: '+(999.99-(999.99*b.discount)).toFixed(2));});"
 ```
 
 Output:
 ```
-Code:           NEWYEAR
-Discount Rate:  20%
+Code: NEWYEAR
+Discount: 20%
 Original Total: 999.99
-Final Total:    799.99
+Final Total: 799.99
 ```
 
-### Discount Codes
+> Screenshot: Discount function output in terminal
+
+![Discount Function](screenshots/09-discount-function.png)
 
 | Code | Discount |
 |------|----------|
@@ -384,33 +310,31 @@ Final Total:    799.99
 
 ## RabbitMQ Messaging
 
-### Step 1 — Open Terminal 1 (Consumer/Listener)
-
+**Terminal 1 — Listen for events:**
 ```bash
 cd inventory-service
 python consumer.py
 ```
 
-Output:
-```
-Waiting for events...
-```
-
-### Step 2 — Open Terminal 2 (Publisher)
-
+**Terminal 2 — Publish payment event:**
 ```bash
 cd payment-service
 python notify.py
 ```
 
-### Step 3 — Terminal 1 receives the event
-
+**Terminal 1 receives:**
 ```
 Waiting for events...
 Event: payment_processed
 ```
 
-### Verify via RabbitMQ Management UI
+> Screenshot: Two terminals showing event published and received
+
+![RabbitMQ Events](screenshots/10-rabbitmq-events.png)
+
+---
+
+### RabbitMQ Management UI
 
 ```
 URL:      http://localhost:15672
@@ -418,25 +342,22 @@ Username: guest
 Password: guest
 ```
 
-Navigate to **Queues** tab → click `events` queue → **Get Messages**
+> Screenshot: RabbitMQ Management UI showing events queue
+
+![RabbitMQ UI](screenshots/11-rabbitmq-ui.png)
 
 ---
 
 ## Database Verification
 
-### Connect to MySQL
-
 ```bash
 docker exec -it deploy-mysql-1 mysql -u root -psecret inventory
 ```
-
-### Query inventory table
 
 ```sql
 SELECT * FROM stock;
 ```
 
-Output:
 ```
 +----+------------+-----+
 | id | name       | qty |
@@ -448,11 +369,9 @@ Output:
 +----+------------+-----+
 ```
 
-### Exit MySQL
+> Screenshot: MySQL showing persisted inventory data
 
-```sql
-EXIT;
-```
+![MySQL Data](screenshots/12-mysql-data.png)
 
 ---
 
