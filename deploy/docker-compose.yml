@@ -1,0 +1,23 @@
+version: "3.9"
+services:
+  cart:
+    build: ../cart-service
+    ports: ["3001:3001"]
+  payment:
+    build: ../payment-service
+    ports: ["3002:3002"]
+    depends_on: ["rabbitmq"]
+  inventory:
+    build: ../inventory-service
+    ports: ["3003:3003"]
+    depends_on: ["mysql"]
+    restart: always
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports: ["5672:5672", "15672:15672"]
+  mysql:
+    image: mysql:8
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=inventory
+    ports: ["3307:3306"]
